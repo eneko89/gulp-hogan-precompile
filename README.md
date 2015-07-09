@@ -1,4 +1,4 @@
-gulp-hogan-compile [![NPM version][npm-image]][npm-url] [![Dependency Status][depstat-image]][depstat-url] [![Build Status][travis-image]][travis-url]
+gulp-hogan-precompile
 ===
 
 A [gulp][] plugin to compile [mustache][] HTML templates to JavaScript functions using [hogan][].

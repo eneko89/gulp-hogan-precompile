@@ -1,30 +1,23 @@
 'use strict';
 
-var through = require('through');
-var os = require('os');
+var through = require('through2');
 var path = require('path');
 var gutil = require('gulp-util');
 var PluginError = gutil.PluginError;
-var File = gutil.File;
 var hogan = require('hogan.js');
 var extend = require('extend');
 
 /**
- * Compile hogan templates into a js file
- *
- * @param {string|object} dest - If a string will be used as a filename, if an object templates
- * will be addded to it and gulp.dest() will have no affect (and other string related settings ignored)
- * @param {object} options - see README
+ * Compile hogan templates into a js file.
+ * 
+ * @param  {Object}  options  Plugin options.
+ *                            See README.md.
  */
-module.exports = function(dest, options) {
-    if (!dest) {
-        throw new PluginError('gulp-hogan-compile',  'Missing dest argument for gulp-hogan-compile');
-    }
+module.exports = function(options) {
 
-    // Store templates directly in dest if it is an object instead of a string file name
-    var templates = typeof dest === 'object' ? dest : {},
-        firstFile = null;
+    var templates = {};
 
+    // Plugin and hogan options
     options = extend(true, {
         newLine: gutil.linefeed,
         wrapper: 'amd',
@@ -39,32 +32,26 @@ module.exports = function(dest, options) {
     }, options || {});
 
     // Do not convert to strings if dest is an object
-    options.templateOptions.asString = typeof dest !== 'object';
+    options.templateOptions.asString = true;
 
-    return through(bufferContents, endStream);
+    return through.obj(function (file, enc, callback) {
 
-    function bufferContents(file) {
         if (file.isNull()) {
-            return;
+            return callback(null, file);
         }
-        if (file.isStream()) {
-            return this.emit('error', new PluginError('gulp-hogan-compile',  'Streaming not supported'));
-        }
-        if (!firstFile) {
-            firstFile = file;
-        }
-        templates[options.templateName(file)] = hogan.compile(file.contents.toString('utf8'), options.templateOptions);
-    }
 
-    function endStream(){
-        // If no templates or dest is an object nothing more to do
-        if (templates.length === 0 || typeof dest === 'object') {
-            return this.emit('end');
+        if (file.isStream()) {
+            this.emit('error', new PluginError('gulp-hogan-compile',  'Streaming not supported'));
+            return callback();
         }
+
+        templates[options.templateName(file)] = hogan.compile(file.contents.toString('utf8'), options.templateOptions);
+
         var lines = [];
         for (var name in templates) {
             lines.push('    templates[\'' + name + '\'] = new Hogan.Template(' + templates[name] + ');');
         }
+
         // Unwrapped
         lines.unshift('    var templates = {};');
 
@@ -73,24 +60,24 @@ module.exports = function(dest, options) {
             lines.unshift('    var Hogan = require(\'' + options.hoganModule  + '\');');
             lines.push('    return templates;');
         }
+
         // AMD wrapper
         if (options.wrapper === 'amd') {
             lines.unshift('define(function(require) {');
             lines.push('})');
         }
+
         // CommonJS wrapper
         else if (options.wrapper === 'commonjs') {
             lines.unshift('module.exports = (function() {');
             lines.push('})();');
         }
 
-        this.emit('data', new File({
-            cwd: firstFile.cwd,
-            base: firstFile.base,
-            path: path.join(firstFile.base, dest),
-            contents: new Buffer(lines.join(options.newLine))
-        }));
+        file.contents = new Buffer(lines.join(options.newLine));
+        file.path = gutil.replaceExtension(file.path, '.js');
 
-        this.emit('end');
-    }
+        callback(null, file);
+
+    });
+
 };

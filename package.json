@@ -1,46 +1,40 @@
 {
-  "name": "gulp-hogan-compile",
-  "version": "0.4.1",
+  "name": "gulp-hogan-precompile",
+  "version": "0.1.0",
   "description": "A gulp plugin to compile mustache HTML templates to JavaScript functions using hogan.",
   "main": "index.js",
-  "homepage": "https://github.com/paulwib/gulp-hogan-compile",
-  "bugs": "https://github.com/paulwib/gulp-hogan-compile/issues",
+  "homepage": "https://github.com/eneko89/gulp-hogan-precompile",
+  "bugs": "https://github.com/eneko89/gulp-hogan-precompile/issues",
   "repository": {
     "type": "git",
-    "url": "git://github.com/paulwib/gulp-hogan-compile.git"
-  },
-  "directories": {
-    "test": "test"
+    "url": "git@github.com:eneko89/gulp-hogan-precompile.git"
   },
   "author": {
-    "name": "Paul Willoughby",
-    "url": "https://github.com/paulwib"
+    "name": "Eneko Sanz",
+    "url": "https://github.com/eneko89"
   },
   "dependencies": {
-    "extend": "^2.0.0",
-    "gulp-util": "~3.0.1",
-    "hogan.js": "~3.0.0",
-    "through": "~2.3.0"
+    "extend": "~3.0.0",
+    "gulp-util": "~3.0.6",
+    "hogan.js": "~3.0.2",
+    "through2": "~0.6.5"
   },
   "devDependencies": {
     "chai": "^1.9.2",
     "mocha": "~2.0.0",
-    "mversion": "^1.6.1",
     "should": "~4.1.0"
   },
   "engines": {
     "node": ">=0.9"
   },
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha",
-    "release-patch": "./node_modules/.bin/mversion patch -m 'Released patch version v%s'",
-    "release-minor": "./node_modules/.bin/mversion minor -m 'Released minor version v%s'",
-    "release-major": "./node_modules/.bin/mversion major -m 'Released major version v%s'"
+    "test": "./node_modules/mocha/bin/mocha"
   },
   "keywords": [
     "gulpplugin",
     "templates",
     "mustache",
+    "precompile",
     "hogan"
   ],
   "license": "MIT"

@@ -28,7 +28,7 @@
     "node": ">=0.9"
   },
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha"
+    "test": "node node_modules/mocha/bin/mocha"
   },
   "keywords": [
     "gulpplugin",

@@ -7,13 +7,15 @@ var PluginError = gutil.PluginError;
 var hogan = require('hogan.js');
 var extend = require('extend');
 
+var PLUGIN_NAME = 'gulp-hogan-precompile';
+
 /**
  * Compile hogan templates into a js file.
  * 
  * @param  {Object}  options  Plugin options.
  *                            See README.md.
  */
-module.exports = function(options) {
+module.exports = function compile(options) {
 
     var templates = {};
 
@@ -41,15 +43,18 @@ module.exports = function(options) {
         }
 
         if (file.isStream()) {
-            this.emit('error', new PluginError('gulp-hogan-compile',  'Streaming not supported'));
+            this.emit('error', new PluginError(PLUGIN_NAME,  'Streaming not supported'));
             return callback();
         }
 
         templates[options.templateName(file)] = hogan.compile(file.contents.toString('utf8'), options.templateOptions);
 
-        var lines = [];
+        var lines = [],
+            blanks = options.wrapper ? '    '
+                                     : '';
+
         for (var name in templates) {
-            lines.push('    templates[\'' + name + '\'] = new Hogan.Template(' + templates[name] + ');');
+            lines.push(blanks + 'templates[\'' + name + '\'] = new Hogan.Template(' + templates[name] + ');');
         }
 
         // Unwrapped

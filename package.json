@@ -20,12 +20,11 @@
     "through2": "~0.6.5"
   },
   "devDependencies": {
-    "chai": "^1.9.2",
     "mocha": "~2.0.0",
     "should": "~4.1.0"
   },
   "engines": {
-    "node": ">=0.9"
+    "node": ">=0.10"
   },
   "scripts": {
     "test": "node node_modules/mocha/bin/mocha"
@@ -34,6 +33,7 @@
     "gulpplugin",
     "templates",
     "mustache",
+    "compile",
     "precompile",
     "hogan"
   ],

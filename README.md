@@ -5,67 +5,90 @@ A [gulp][] plugin to compile [mustache][] HTML templates to JavaScript functions
 
 ## Usage
 
-In `templates/test.html`:
-
-```html
-<p>Hello {{place}}</p>
-```
-
 In your gulpfile:
 
 ```javascript
-var compiler = require('gulp-hogan-compile');
+var hoganCompiler = require('gulp-hogan-precompile');
+var declare = require('gulp-declare');
+var concat = require('gulp-concat');
 
 gulp.task('templates', function() {
-    gulp.src('templates/**/*.html')
-        .pipe(compiler('templates.js'))
-        .pipe(gulp.dest('js/'));
+  gulp.src('templates/**/*.html')
+      .pipe(hoganCompiler())
+      .pipe(declare({
+        namespace: 'templates',
+        noRedeclare: true
+      }))
+      .pipe(concat('templates.js'))
+      .pipe(gulp.dest('js/'));
 });
 ```
 
-In your code:
+This will compile the mustache templates in the `templates/` folder into JavaScript with `hogan.compile()`. Then, it will define them in the 'templates' namespace with [`gulp-declare`][gulp-declare] plugin, and finally, merge and write them to a `templates.js` file.
 
-```javascript
-    var templates = require('js/templates.js');
-    var html = templates.test.render({
-        place: 'world';
-    })
-    console.log(html); // <p>Hello world</p>
+For example, for the following folder structure
+
+```
+├── gulpfile.js                # Your gulpfile
+└── templates/                 # Your tempaltes
+    ├── layout.html            # A template that will be available as templates.layout
+    └── home/                  # A folder to group some templates
+        └── foo.html           # A template that will be available as templates.foo
 ```
 
-This will compile the templates into a JavaScript AMD module using `hogan.compile`.
+It would generate :
 
-It will `require('hogan')` so that module needs to be available, for example by installing it with [bower][]. You can change the name/path of the hogan module at compile time  with `options.hoganModule`.
+```js
+this["templates"] = this["templates"] || {};
+this["templates"]["layout"] = new Hogan.Template( /* compiled template */ );
+this["templates"]["foo"] = new Hogan.Template( /* compiled template */ );
+```
 
 
-## Parameters
+## Compiling to various module systems
 
-* options `object`
-    * Options passed to the hogan task
+See the [`gulp-define-module`][gulp-define-module] documentation for details on how to define templates as AMD, CommonJS, and hybrid modules.
 
-## Options
+For example, to compile the previous folder structure to AMD:
 
-### newLine `string`
+```javascript
+var hoganCompiler = require('gulp-hogan-precompile');
+var defineModule = require('gulp-define-module');
+var concat = require('gulp-concat');
 
-The line delimiter, defaults to your operating system's newline. Ignored if `dest` is an object.
+gulp.task('templates', function() {
+  gulp.src('templates/**/*.html')
+      .pipe(hoganCompiler())
+      .pipe(defineModule('amd'))
+      .pipe(concat('templates.js'))
+      .pipe(gulp.dest('js/'));
+});
+```
 
-### wrapper `string`
+[`gulp-define-module`][gulp-define-module] let's you define a custom wrapper for templates (e.g. `new MyApp.Hogan.Template( /* compiled template */ )`) with [`options.wrapper`][options.wrapper], which defaults to false (no wrapper), but first you must disable the default wrapper in `gulp-hogan-precompile` providing an options object with `wrap` set to `false`: `hoganCompiler({ wrap: false })`.
 
-Either `amd`, `commonjs` or `false` for no wrapper, defaults to `amd`. If wrapper is `false` a local var `templates` will be defined containing the templates. Ignored if `dest` is an object.
+`gulp-hogan-precompile` also sets a default [`options.require`][options.require] of `{ Hogan: 'hogan.js' }` for [`gulp-define-module`][gulp-define-module] so Hogan will be present into defined AMD, CommonJS, or hybrid modules. You can change this by passing a different `options.require` when you invoke `gulp-define-module`.
 
-### templateOptions `object`
 
-Options passed through to `hogan.compile`. `asString` will be set depending on whether output is a file or an object, any passed setting is ignored.
+## API
 
-### templateName `function(file)`
+### hoganCompiler(options)
 
-A function that will be passed the file and should return a name for the template. By default uses the relative path and basename of the file without an extension.
+#### options.compilerOptions
+Type: `Object`
 
-### hoganModule `string`
+Compiler options to pass to `hogan.compile()`.
 
-The name of the hogan module *in your app*, defaults to `hogan`. If you're not using a wrapper then the global `Hogan` must be available.
+#### options.wrap
+Type: `Boolean`
+
+Tells this plugin to wrap compiled templates in `new Hogan.Template( /* compiled template */ )` or not. Defaults to true.
+
 
 [gulp]:http://gulpjs.com
 [mustache]:http://mustache.github.io
 [hogan]:https://github.com/twitter/hogan.js
-[bower]:https://github.com/bower/bower
+[gulp-define-module]:https://github.com/wbyoung/gulp-define-module
+[options.require]:https://github.com/wbyoung/gulp-define-module#optionsrequire
+[options.wrapper]:https://github.com/wbyoung/gulp-define-module#optionswrapper
+[gulp-declare]:https://github.com/lazd/gulp-declare

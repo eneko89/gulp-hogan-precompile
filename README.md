@@ -24,7 +24,7 @@ gulp.task('templates', function() {
 });
 ```
 
-This will compile the mustache templates in the `templates/` folder into JavaScript with `hogan.compile()`. Then, it will define them in the 'templates' namespace with [`gulp-declare`][gulp-declare] plugin, and finally, merge and write them to a `templates.js` file.
+This will compile the mustache templates in the `templates/` folder into JavaScript with `hogan.compile()`. Then, it will define them in the 'templates' namespace with [`gulp-declare`][gulp-declare] plugin, and finally, merge and write them to  `js/templates.js` file.
 
 For example, for the following folder structure
 
@@ -36,7 +36,7 @@ For example, for the following folder structure
         └── foo.html           # A template that will be available as templates.foo
 ```
 
-It would generate :
+It would generate:
 
 ```js
 this["templates"] = this["templates"] || {};
@@ -65,7 +65,21 @@ gulp.task('templates', function() {
 });
 ```
 
-[`gulp-define-module`][gulp-define-module] let's you define a custom wrapper for templates (e.g. `new MyApp.Hogan.Template( /* compiled template */ )`) with [`options.wrapper`][options.wrapper], which defaults to false (no wrapper), but first you must disable the default wrapper in `gulp-hogan-precompile` providing an options object with `wrap` set to `false`: `hoganCompiler({ wrap: false })`.
+[`gulp-define-module`][gulp-define-module] let's you define a custom wrapper for templates (e.g. `new MyApp.Hogan.Template( /* compiled template */ )`) with [`options.wrapper`][options.wrapper], which defaults to false (no wrapper), but first you must disable the default wrapper in `gulp-hogan-precompile` providing an options object with `wrap` set to `false`:
+
+```javascript
+gulp.task('templates', function() {
+  gulp.src('templates/**/*.html')
+      .pipe(hoganCompiler({
+        wrap: false
+      }))
+      .pipe(defineModule('amd', {
+        wrapper: 'new MyApp.Hogan.Template(<%= contents %>)'
+      }))
+      .pipe(concat('templates.js'))
+      .pipe(gulp.dest('js/'));
+});
+```
 
 `gulp-hogan-precompile` also sets a default [`options.require`][options.require] of `{ Hogan: 'hogan.js' }` for [`gulp-define-module`][gulp-define-module] so Hogan will be present into defined AMD, CommonJS, or hybrid modules. You can change this by passing a different `options.require` when you invoke `gulp-define-module`.
 

@@ -38,9 +38,15 @@ module.exports = function compile(options) {
       return callback();
     }
 
-    // Compiled tamplate function as string.
-    var template = hogan.compile(file.contents.toString('utf8'),
-                                 options.compilerOptions);
+    //Compile template to string, wrapping any errors in error event.
+    var template;
+    try{
+      template = hogan.compile(file.contents.toString('utf8'),
+                                   options.compilerOptions);
+    }catch(e){
+      this.emit('error', new PluginError(PLUGIN_NAME, 'Error compiling template: '+e));
+      return callback();
+    }
 
     if (options.wrap) {
       template = 'new Hogan.Template(' + template + ')'

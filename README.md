@@ -1,3 +1,7 @@
+**This is not being actively developed nor supported.** No new features will be added and only critical security issues will be addressed. For further info, mail me at contact@eneko.me.
+
+---
+
 gulp-hogan-precompile
 ===
 
